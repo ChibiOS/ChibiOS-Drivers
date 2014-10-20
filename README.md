@@ -9,7 +9,8 @@ Collection of drivers for ChibiOS' HAL.
 * Add the required files lists to the CSRC and CINC lists ( Usually $(STM32DRIVERSRC) and $(STM32DRIVERINC) )
 * Include the drivers.h file in main.c, and anywhere else needed
 * Add a driversInit() call just below halInit()
-* You might have to tweak extra_registry.h depending on your hardware
+* include drivers_conf.h at the top of mcuconf.h
+* You might have to tweak extra_registry.h and drivers_conf.h depending on your hardware
   
 Everything else works like using a standard driver.  
 So far only drivers for STM32.
