@@ -101,9 +101,9 @@ void iwdgReset( IWDGDriver *iwdgp )
 {
   osalDbgCheck( iwdgp != NULL);
 
-  osalSysLock();
+  //osalSysLock();
   iwdg_lld_reset( iwdgp );
-  osalSysUnlock();
+  //osalSysUnlock();
 }
 
 #endif /* DRIVER_USE_IWDG */
