@@ -2,10 +2,10 @@
 #define DRIVERS_H
 
 #include "hal.h"
-#include "dac.h"
-#include "iwdg.h"
-#include "timcap.h"
-#include "iuart.h"
+#include "dac_driver.h"
+#include "iwdg_driver.h"
+#include "timcap_driver.h"
+#include "iuart_driver.h"
 
 void driversInit(void);
 

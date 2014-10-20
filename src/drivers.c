@@ -2,16 +2,16 @@
 
 void driversInit(void)
 {
-#if defined(HAL_USE_DAC) && HAL_USE_DAC
+#if defined(DRIVER_USE_DAC) && DRIVER_USE_DAC
   dacInit();
 #endif
-#if defined(HAL_USE_IWDG) && HAL_USE_IWDG
+#if defined(DRIVER_USE_IWDG) && DRIVER_USE_IWDG
   iwdgInit();
 #endif
-#if defined(HAL_USE_TIMCAP) && HAL_USE_TIMCAP
+#if defined(DRIVER_USE_TIMCAP) && DRIVER_USE_TIMCAP
   timcapInit();
 #endif
-#if defined(HAL_USE_IUART) && HAL_USE_IUART
+#if defined(DRIVER_USE_IUART) && DRIVER_USE_IUART
   iuartInit();
 #endif
 }

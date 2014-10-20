@@ -26,13 +26,13 @@
  * @{
  */
 
-#ifndef _TIMCAP_H_
-#define _TIMCAP_H_
+#ifndef _TIMCAP_DRIVER_H_
+#define _TIMCAP_DRIVER_H_
 
 #include "ch.h"
 #include "hal.h"
 
-#if HAL_USE_TIMCAP || defined(__DOXYGEN__)
+#if DRIVER_USE_TIMCAP || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -75,7 +75,7 @@ typedef struct TIMCAPDriver TIMCAPDriver;
  */
 typedef void (*timcapcallback_t)(TIMCAPDriver *timcapp);
 
-#include "timcap_lld.h"
+#include "timcap_driver_lld.h"
 
 /*===========================================================================*/
 /* Driver macros.                                                            */
@@ -199,8 +199,8 @@ extern "C" {
 }
 #endif
 
-#endif /* HAL_USE_TIMCAP */
+#endif /* DRIVER_USE_TIMCAP */
 
-#endif /* _TIMCAP_H_ */
+#endif /* _TIMCAP_DRIVER_H_ */
 
 /** @} */

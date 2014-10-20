@@ -30,7 +30,7 @@
 #include "stm32_tim.h"
 
 
-#if HAL_USE_TIMCAP || defined(__DOXYGEN__)
+#if DRIVER_USE_TIMCAP || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -377,7 +377,7 @@ extern "C" {
 }
 #endif
 
-#endif /* HAL_USE_TIMCAP */
+#endif /* DRIVER_USE_TIMCAP */
 
 #endif /* _TIMCAP_LLD_H_ */
 

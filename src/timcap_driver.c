@@ -26,9 +26,9 @@
  * @{
  */
 
-#include "timcap.h"
+#include "timcap_driver.h"
 
-#if HAL_USE_TIMCAP || defined(__DOXYGEN__)
+#if DRIVER_USE_TIMCAP || defined(__DOXYGEN__)
 
 
 /*===========================================================================*/
@@ -86,15 +86,15 @@ void timcapObjectInit(TIMCAPDriver *timcapp) {
  */
 void timcapStart(TIMCAPDriver *timcapp, const TIMCAPConfig *config) {
 
-  chDbgCheck((timcapp != NULL) && (config != NULL), "timcapStart");
+  osalDbgCheck((timcapp != NULL) && (config != NULL));
 
-  chSysLock();
-  chDbgAssert((timcapp->state == TIMCAP_STOP) || (timcapp->state == TIMCAP_READY),
-              "timcapStart(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert((timcapp->state == TIMCAP_STOP) || (timcapp->state == TIMCAP_READY),
+              "invalid state");
   timcapp->config = config;
   timcap_lld_start(timcapp);
   timcapp->state = TIMCAP_READY;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -106,14 +106,14 @@ void timcapStart(TIMCAPDriver *timcapp, const TIMCAPConfig *config) {
  */
 void timcapStop(TIMCAPDriver *timcapp) {
 
-  chDbgCheck(timcapp != NULL, "timcapStop");
+  osalDbgCheck(timcapp != NULL);
 
-  chSysLock();
-  chDbgAssert((timcapp->state == TIMCAP_STOP) || (timcapp->state == TIMCAP_READY),
-              "timcapStop(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert((timcapp->state == TIMCAP_STOP) || (timcapp->state == TIMCAP_READY),
+              "invalid state");
   timcap_lld_stop(timcapp);
   timcapp->state = TIMCAP_STOP;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -125,13 +125,13 @@ void timcapStop(TIMCAPDriver *timcapp) {
  */
 void timcapEnable(TIMCAPDriver *timcapp) {
 
-  chDbgCheck(timcapp != NULL, "timcapEnable");
+  osalDbgCheck(timcapp != NULL);
 
-  chSysLock();
-  chDbgAssert(timcapp->state == TIMCAP_READY, "timcapEnable(), #1", "invalid state");
+  osalSysLock();
+  osalDbgAssert(timcapp->state == TIMCAP_READY, "invalid state");
   timcap_lld_enable(timcapp);
   timcapp->state = TIMCAP_WAITING;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
 /**
@@ -143,17 +143,17 @@ void timcapEnable(TIMCAPDriver *timcapp) {
  */
 void timcapDisable(TIMCAPDriver *timcapp) {
 
-  chDbgCheck(timcapp != NULL, "timcapDisable");
+  osalDbgCheck(timcapp != NULL);
 
-  chSysLock();
-  chDbgAssert((timcapp->state == TIMCAP_READY) || (timcapp->state == TIMCAP_WAITING) ||
+  osalSysLock();
+  osalDbgAssert((timcapp->state == TIMCAP_READY) || (timcapp->state == TIMCAP_WAITING) ||
               (timcapp->state == TIMCAP_ACTIVE) || (timcapp->state == TIMCAP_IDLE),
-              "timcapDisable(), #1", "invalid state");
+             "invalid state");
   timcap_lld_disable(timcapp);
   timcapp->state = TIMCAP_READY;
-  chSysUnlock();
+  osalSysUnlock();
 }
 
-#endif /* HAL_USE_TIMCAP */
+#endif /* DRIVER_USE_TIMCAP */
 
 /** @} */

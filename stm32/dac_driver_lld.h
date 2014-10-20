@@ -1,39 +1,36 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006,2007,2008,2009,2010,
-                 2011,2012 Giovanni Di Sirio.
+    ChibiOS/HAL - Copyright (C) 2006-2014 Giovanni Di Sirio
 
-    This file is part of ChibiOS/RT.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    ChibiOS/RT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    ChibiOS/RT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 /**
- * @file    STM32/DACv1/dac_lld.h
+ * @file    STM32/DACv1/dac_driver_lld.h
  * @brief   STM32 DAC subsystem low level driver header.
  *
  * @addtogroup DAC
  * @{
  */
 
-#ifndef _DAC_LLD_H_
-#define _DAC_LLD_H_
+#ifndef _DAC_DRIVER_LLD_H_
+#define _DAC_DRIVER_LLD_H_
+
+#if DRIVER_USE_DAC || defined(__DOXYGEN__)
 
 #include "stm32_tim.h"
+#include "stm32_rcc.h"
 #include "extra_registry.h"
 #include "extra_rcc.h"
-
-#if HAL_USE_DAC || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -48,19 +45,16 @@
 #define STM32_DAC_CR_BOFF_ENABLE    (uint32_t)0x00000000
 #define STM32_DAC_CR_BOFF_DISABLE   DAC_CR_BOFF1
 
-#define STM32_DAC_CR_TSEL_NONE     (uint32_t)0x00000000
-#define STM32_DAC_CR_TSEL_TIM2     DAC_CR_TEN1 | DAC_CR_TSEL1_2
-#define STM32_DAC_CR_TSEL_TIM4     DAC_CR_TEN1 | DAC_CR_TEN0 | DAC_CR_TSEL1_2
-#define STM32_DAC_CR_TSEL_TIM5     DAC_CR_TEN1 | DAC_CR_TEN0 | DAC_CR_TSEL1_1
-#define STM32_DAC_CR_TSEL_TIM6     DAC_CR_TEN1
-#define STM32_DAC_CR_TSEL_TIM7     DAC_CR_TEN1 | DAC_CR_TSEL1_1
-#define STM32_DAC_CR_TSEL_TIM3     DAC_CR_TEN1 | DAC_CR_TSEL1_0
-#define STM32_DAC_CR_TSEL_TIM18    DAC_CR_TEN1 | DAC_CR_TSEL1_0 | DAC_CR_TSEL1_1
-#define STM32_DAC_CR_TSEL_EXT_IT9 DAC_CR_TEN1 | DAC_CR_TSEL1_2
-#define STM32_DAC_CR_TSEL_SOFT     DAC_CR_TEN1 |  DAC_CR_TSEL1
-
-#define STM32_DAC_SWTRIGR1 DAC_SWTRIGR_SWTRIG1
-#define STM32_DAC_SWTRIGR2 DAC_SWTRIGR_SWTRIG2
+#define STM32_DAC_CR_TSEL_NONE       (uint32_t)0x00000000
+#define STM32_DAC_CR_TSEL_TIM2       DAC_CR_TEN1 | DAC_CR_TSEL1_2
+#define STM32_DAC_CR_TSEL_TIM4       DAC_CR_TEN1 | DAC_CR_TSEL1_2
+#define STM32_DAC_CR_TSEL_TIM5       DAC_CR_TEN1 | DAC_CR_TSEL1_1
+#define STM32_DAC_CR_TSEL_TIM6       DAC_CR_TEN1
+#define STM32_DAC_CR_TSEL_TIM7       DAC_CR_TEN1 | DAC_CR_TSEL1_1
+#define STM32_DAC_CR_TSEL_TIM3       DAC_CR_TEN1 | DAC_CR_TSEL1_0
+#define STM32_DAC_CR_TSEL_TIM18     DAC_CR_TEN1 | DAC_CR_TSEL1_0 | DAC_CR_TSEL1_1
+#define STM32_DAC_CR_TSEL_EXT_IT9  DAC_CR_TEN1 | DAC_CR_TSEL1_2
+#define STM32_DAC_CR_TSEL_SOFT      DAC_CR_TEN1 | DAC_CR_TSEL1_1 | DAC_CR_TSEL1_2
 
 #define STM32_DAC_CR_WAVE_NONE      (uint32_t)0x00000000
 #define STM32_DAC_CR_WAVE_NOISE     DAC_CR_WAVE1_0
@@ -160,7 +154,7 @@
  * @brief   DAC DMA error hook.
  */
 #if !defined(STM32_DAC_DMA_ERROR_HOOK) || defined(__DOXYGEN__)
-#define STM32_DAC_DMA_ERROR_HOOK(dacp)      chSysHalt()
+#define STM32_DAC_DMA_ERROR_HOOK(dacp)      osalSysHalt()
 #endif
 
 /**
@@ -168,7 +162,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN1_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN1_DMA_STREAM        STM32_DMA_STREAM_ID(1, 3)
+#define STM32_DAC_CHN1_DMA_STREAM           STM32_DMA_STREAM_ID(1, 3)
 #endif
 
 /**
@@ -176,7 +170,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN2_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN2_DMA_STREAM        STM32_DMA_STREAM_ID(1, 4)
+#define STM32_DAC_CHN2_DMA_STREAM           STM32_DMA_STREAM_ID(1, 4)
 #endif
 
 /**
@@ -184,7 +178,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN3_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN3_DMA_STREAM        STM32_DMA_STREAM_ID(1, 5)
+#define STM32_DAC_CHN3_DMA_STREAM           STM32_DMA_STREAM_ID(1, 5)
 #endif
 
 /*===========================================================================*/
@@ -207,6 +201,23 @@
 #error "DAC driver activated but no DAC peripheral assigned"
 #endif
 
+/* The following checks are only required when there is a DMA able to
+   reassign streams to different channels.*/
+#if STM32_ADVANCED_DMA
+/* Check on the presence of the DMA streams settings in mcuconf.h.*/
+#if STM32_DAC_USE_CHN1 && !defined(STM32_DAC_CHN1_DMA_STREAM)
+#error "DAC1 CHN1 DMA stream not defined"
+#endif
+
+#if STM32_DAC_USE_CHN2 && !defined(STM32_DAC_CHN2_DMA_STREAM)
+#error "DAC1 CHN2 DMA stream not defined"
+#endif
+
+#if STM32_DAC_USE_CHN3 && !defined(STM32_DAC_CHN3_DMA_STREAM)
+#error "DAC1 CHN3 DMA stream not defined"
+#endif
+
+/* Check on the validity of the assigned DMA channels.*/
 #if STM32_DAC_USE_CHN1 &&                                                   \
     !STM32_DMA_IS_VALID_ID(STM32_DAC_CHN1_DMA_STREAM, STM32_DAC_CHN1_DMA_MSK)
 #error "invalid DMA stream associated to DAC CHN1"
@@ -221,6 +232,7 @@
     !STM32_DMA_IS_VALID_ID(STM32_DAC_CHN3_DMA_STREAM, STM32_DAC_CHN3_DMA_MSK)
 #error "invalid DMA stream associated to DAC CHN3"
 #endif
+#endif /* STM32_ADVANCED_DMA */
 
 #if !defined(STM32_DMA_REQUIRED)
 #define STM32_DMA_REQUIRED
@@ -246,21 +258,13 @@ typedef uint16_t dacsample_t;
  * @param[in] dacp      pointer to the @p DACDriver object triggering the
  *                      callback
  */
-typedef void (*dacendcallback_t)(DACDriver *dacp, const dacsample_t * samples, size_t pos);
-
-/**
- * @brief   DAC notification callback type.
- *
- * @param[in] dacp      pointer to the @p DACDriver object triggering the
- *                      callback
- */
-typedef void (*dacerrcallback_t)(DACDriver *dacp, uint32_t flags);
+typedef void (*daccallback_t)(DACDriver *dacp);
 
 typedef enum { 
   DAC_DHRM_12BIT_RIGHT = 0,
   DAC_DHRM_12BIT_LEFT = 1,
   DAC_DHRM_8BIT_RIGHT = 2,
-#if defined(STM32_HAS_DAC_CHN2) && STM32_HAS_DAC_CHN2 && !defined(__DOXYGEN__)
+#if STM32_HAS_DAC_CHN2 && !defined(__DOXYGEN__)
   DAC_DHRM_12BIT_RIGHT_DUAL = 3,
   DAC_DHRM_12BIT_LEFT_DUAL = 4,
   DAC_DHRM_8BIT_RIGHT_DUAL = 5
@@ -278,19 +282,15 @@ typedef struct {
   /**
    * @brief Number of DAC channels.
    */
-  uint16_t              num_channels;
+  uint32_t                  num_channels;
   /**
    * @brief Operation complete callback or @p NULL.
    */
-  dacendcallback_t     end_cb;
+  daccallback_t             end_cb;
   /**
    * @brief Error handling callback or @p NULL.
    */
-  dacerrcallback_t      error_cb;
-  /**
-   * @brief Error handling callback or @p NULL.
-   */
-  bool      circular;
+  daccallback_t             error_cb;
   
 } DACConversionGroup;
 
@@ -301,7 +301,7 @@ typedef struct {
   /**
    * @brief   DAC data holding register mode.
    */
-  dacdhrmode_t       dhrm;
+  dacdhrmode_t              dhrm;
   /* End of the mandatory fields.*/
   /**
    * @brief DAC initialization data.
@@ -320,15 +320,15 @@ struct DACDriver {
   /**
    * @brief Conversion group.
    */
-  const DACConversionGroup *grpp;
+  const DACConversionGroup  *grpp;
   /**
    * @brief Samples buffer pointer.
    */
-  const dacsample_t *samples;
+  const dacsample_t         *samples;
   /**
    * @brief Samples buffer size.
    */
-  uint16_t depth;
+  uint16_t                  depth;
   /**
    * @brief Current configuration data.
    */
@@ -337,17 +337,13 @@ struct DACDriver {
   /**
    * @brief Waiting thread.
    */
-  Thread                    *thread;
+  thread_reference_t        thread;
 #endif /* DAC_USE_WAIT */
 #if DAC_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-#if CH_USE_MUTEXES || defined(__DOXYGEN__)
   /**
    * @brief Mutex protecting the bus.
    */
-  Mutex                     mutex;
-#elif CH_USE_SEMAPHORES
-  Semaphore                 semaphore;
-#endif
+  mutex_t                   mutex;
 #endif /* DAC_USE_MUTUAL_EXCLUSION */
 #if defined(DAC_DRIVER_EXT_FIELDS)
   DAC_DRIVER_EXT_FIELDS
@@ -412,8 +408,8 @@ extern "C" {
 }
 #endif
 
-#endif /* HAL_USE_DAC */
+#endif /* DRIVER_USE_DAC */
 
-#endif /* _DAC_LLD_H_ */
+#endif /* _DAC_DRIVER_LLD_H_ */
 
 /** @} */

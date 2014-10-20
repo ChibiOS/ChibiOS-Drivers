@@ -1,21 +1,17 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006,2007,2008,2009,2010,
-                 2011,2012 Giovanni Di Sirio.
+    ChibiOS/HAL - Copyright (C) 2006-2014 Giovanni Di Sirio
 
-    This file is part of ChibiOS/RT.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    ChibiOS/RT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    ChibiOS/RT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 /**
@@ -26,13 +22,11 @@
  * @{
  */
 
-#include "ch.h"
 #include "hal.h"
+#include "drivers.h"
+#include "dac_driver_lld.h"
 
-#include "dac.h"
-#include "dac_lld.h"
-
-#if HAL_USE_DAC || defined(__DOXYGEN__)
+#if DRIVER_USE_DAC || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
@@ -83,7 +77,6 @@ DACDriver DACD3;
 /* Driver local functions.                                                   */
 /*===========================================================================*/
 
-
 /**
  * @brief   Shared end/half-of-tx service routine.
  *
@@ -91,20 +84,21 @@ DACDriver DACD3;
  * @param[in] flags     pre-shifted content of the ISR register
  */
 static void dac_lld_serve_tx_interrupt(DACDriver *dacp, uint32_t flags) {
+
 #if defined(STM32_DAC_DMA_ERROR_HOOK)
   (void)dacp;
   if ((flags & (STM32_DMA_ISR_TEIF | STM32_DMA_ISR_DMEIF)) != 0) {
     /* DMA errors handling.*/
-    _dac_isr_error_code(dacp, flags);
+    //~ _dac_isr_error_code(dacp, flags);
   }
   else {
     if ((flags & STM32_DMA_ISR_HTIF) != 0) {
       /* Half transfer processing.*/
-      _dac_isr_half_code(dacp);
+      //~ _dac_isr_half_code(dacp);
     }
     if ((flags & STM32_DMA_ISR_TCIF) != 0) {
       /* Transfer complete processing.*/
-      _dac_isr_full_code(dacp);
+      //~ _dac_isr_full_code(dacp);
     }
   }
 #else
@@ -179,118 +173,51 @@ void dac_lld_init(void) {
  * @notapi
  */
 void dac_lld_start(DACDriver *dacp) {
-
-#if STM32_DAC_USE_CHN1
-  if (&DACD1 == dacp) {
-    rccEnableDAC1(FALSE);
-  }
-#endif
-#if STM32_DAC_USE_CHN2
-  if (&DACD2 == dacp) {
-    rccEnableDAC1(FALSE);
-  }
-#endif
-#if STM32_DAC_USE_CHN3
-  if (&DACD3 == dacp) {
-    rccEnableDAC2(FALSE);
-  }
-#endif
-}
-
-/**
- * @brief   Deactivates the DAC peripheral.
- *
- * @param[in] dacp      pointer to the @p DACDriver object
- *
- * @notapi
- */
-void dac_lld_stop(DACDriver *dacp) {
-
-  dmaStreamRelease(dacp->dma);
-  dacp->tim->CR1 &= ~TIM_CR1_CEN; /* Disable associated timer */
-        
-#if STM32_DAC_USE_CHN1
-  if (&DACD1 == dacp) {
-    dacp->dac->CR &= ~STM32_DAC_CR_EN; /* DAC1 disable.*/
-  }
-#endif
-#if STM32_DAC_USE_CHN2
-  if (&DACD2 == dacp) {
-    dacp->dac->CR &= ~STM32_DAC_CR_EN << 16; /* DAC1 disable.*/
-  }
-#endif
-#if STM32_DAC_USE_CHN3
-  if (&DACD3 == dacp) {
-    dacp->dac->CR &= ~STM32_DAC_CR_EN; /* DAC2 disable.*/
-    rccDisableDAC2(FALSE); /* DAC Clock disable.*/
-  }
-#endif
-
-  if (!(DAC1->CR & (STM32_DAC_CR_EN | STM32_DAC_CR_EN << 16))) {
-    /* DAC Clock disable only if all channels are off.*/
-    rccDisableDAC1(FALSE);
-  }
-}
-
-/**
- * @brief   Sends data over the DAC bus.
- * @details This asynchronous function starts a transmit operation.
- * @post    At the end of the operation the configured callback is invoked.
- *
- * @param[in] dacp      pointer to the @p DACDriver object
- * @param[in] n         number of words to send
- * @param[in] txbuf     the pointer to the transmit buffer
- *
- * @notapi
- */
-void dac_lld_start_conversion(DACDriver *dacp) {
-	
-  chDbgAssert(dacp->samples, "dac_lld_start_conversion(), #1", 
-    "dacp->samples is NULL pointer");
-    
-  uint32_t regshift, dataoffset, arr, trgo;
-  bool_t b;
-
+  uint32_t arr, regshift, trgo, dataoffset;
+  bool b;
+  /* If in stopped state then enables the DAC and DMA clocks.*/
+  if (dacp->state == DAC_STOP) {
 #if STM32_DAC_USE_CHN1
     if (&DACD1 == dacp) {
+      rccEnableDAC1(FALSE);
       /* DAC1 CR data is at bits 0:15 */
       regshift = 0;
       dataoffset = 0;
       /* Timer setup */
-      trgo = STM32_DAC_CR_TSEL_TIM6;
       rccEnableTIM6(FALSE);
       rccResetTIM6();
+      trgo = STM32_DAC_CR_TSEL_TIM6;
     }
 #endif
 #if STM32_DAC_USE_CHN2
     if (&DACD2 == dacp) {
+      rccEnableDAC1(FALSE);
       /* DAC2 CR data is at bits 16:31 */
       regshift = 16;
       dataoffset = &dacp->dac->DHR12R2 - &dacp->dac->DHR12R1;
       /* Timer setup */
-      trgo = STM32_DAC_CR_TSEL_TIM7;
       rccEnableTIM7(FALSE);
       rccResetTIM7();
+      trgo = STM32_DAC_CR_TSEL_TIM7;
     }
 #endif
 #if STM32_DAC_USE_CHN3
     if (&DACD3 == dacp) {
+      rccEnableDAC2(FALSE);
       /* DAC3 CR data is at bits 0:15 */
       regshift = 0;
       dataoffset = 0;
       /* Timer setup */
-      trgo = STM32_DAC_CR_TSEL_TIM18;
       rccEnableTIM18(FALSE);
       rccResetTIM18();
+      trgo = STM32_DAC_CR_TSEL_TIM18;
     }
 #endif
-    
 #if STM32_DAC_USE_CHN1 || STM32_DAC_USE_CHN2 || STM32_DAC_USE_CHN3
-
     dacp->clock = STM32_TIMCLK1;
     arr = (dacp->clock / dacp->grpp->frequency);
-    chDbgAssert((arr <= 0xFFFF),
-        "dac_lld_start(), #1", "invalid frequency");
+    osalDbgAssert((arr <= 0xFFFF),
+        "invalid frequency");
 
     /* Timer configuration.*/
     dacp->tim->CR1  = 0;                        /* Initially stopped.   */
@@ -303,17 +230,19 @@ void dac_lld_start_conversion(DACDriver *dacp) {
     dacp->tim->CNT  = 0;                        /* Reset counter.       */
     dacp->tim->SR   = 0;                        /* Clear pending IRQs.  */
     /* Update Event IRQ enabled. */
+    /* Timer start.*/
+    dacp->tim->CR1  = TIM_CR1_CEN;
 
     /* DAC configuration */
-    dacp->dac->CR &=  ~(STM32_DAC_CR_MASK << regshift);
-    dacp->dac->CR |= (STM32_DAC_CR_EN | STM32_DAC_CR_DMAEN | dacp->config->cr_flags) << regshift;
+    dacp->dac->CR |= ( (dacp->dac->CR & ~STM32_DAC_CR_MASK) | \
+      (STM32_DAC_CR_EN | STM32_DAC_CR_DMAEN | dacp->config->cr_flags) ) << regshift;
       
     /* DMA setup. */
     b = dmaStreamAllocate(dacp->dma,
           dacp->irqprio,
           (stm32_dmaisr_t)dac_lld_serve_tx_interrupt,
           (void *)dacp);
-    chDbgAssert(!b, "dac_lld_start(), #2", "stream already allocated");
+    osalDbgAssert(!b, "stream already allocated");
     switch (dacp->config->dhrm) {
       /* Sets the DAC data register */
       case DAC_DHRM_12BIT_RIGHT:
@@ -335,36 +264,85 @@ void dac_lld_start_conversion(DACDriver *dacp) {
       case DAC_DHRM_12BIT_RIGHT_DUAL:
         dmaStreamSetPeripheral(dacp->dma, &dacp->dac->DHR12RD);
         dacp->dmamode = (dacp->dmamode & ~STM32_DMA_CR_SIZE_MASK) |
-              STM32_DMA_CR_PSIZE_WORD | STM32_DMA_CR_MSIZE_WORD;
+              STM32_DMA_CR_PSIZE_HWORD | STM32_DMA_CR_MSIZE_HWORD;
         break;
       case DAC_DHRM_12BIT_LEFT_DUAL:
         dmaStreamSetPeripheral(dacp->dma, &dacp->dac->DHR12LD);
         dacp->dmamode = (dacp->dmamode & ~STM32_DMA_CR_SIZE_MASK) |
-              STM32_DMA_CR_PSIZE_WORD | STM32_DMA_CR_MSIZE_WORD;
+              STM32_DMA_CR_PSIZE_HWORD | STM32_DMA_CR_MSIZE_HWORD;
         break;
       case DAC_DHRM_8BIT_RIGHT_DUAL:
         dmaStreamSetPeripheral(dacp->dma, &dacp->dac->DHR8RD);
         dacp->dmamode = (dacp->dmamode & ~STM32_DMA_CR_SIZE_MASK) |
-             STM32_DMA_CR_PSIZE_HWORD | STM32_DMA_CR_MSIZE_HWORD;
+             STM32_DMA_CR_PSIZE_BYTE | STM32_DMA_CR_MSIZE_BYTE;
         break;
 #endif
   }
   
   dacp->dac->CR |= trgo << regshift; /* Enable timer trigger */
 #endif
-  
-  if (dacp->grpp->circular == true)
-    dacp->dmamode |= STM32_DMA_CR_CIRC;
-    
-  /* DMA Setup */  
+  }
+}
+
+/**
+ * @brief   Deactivates the DAC peripheral.
+ *
+ * @param[in] dacp      pointer to the @p DACDriver object
+ *
+ * @notapi
+ */
+void dac_lld_stop(DACDriver *dacp) {
+
+  /* If in ready state then disables the DAC clock.*/
+  if (dacp->state == DAC_READY) {
+
+    /* DMA disable.*/
+    dmaStreamRelease(dacp->dma);
+
+#if STM32_DAC_USE_CHN1
+    if (&DACD1 == dacp) {
+      dacp->dac->CR &= ~STM32_DAC_CR_EN; /* DAC1 disable.*/
+    }
+#endif
+#if STM32_DAC_USE_CHN2
+    if (&DACD2 == dacp) {
+      dacp->dac->CR &= ~STM32_DAC_CR_EN << 16; /* DAC1 disable.*/
+    }
+#endif
+#if STM32_DAC_USE_CHN3
+    if (&DACD3 == dacp) {
+      dacp->dac->CR &= ~STM32_DAC_CR_EN; /* DAC2 disable.*/
+      rccDisableDAC2(FALSE); /* DAC Clock disable.*/
+    }
+#endif
+    dacp->tim->CR1 &= ~TIM_CR1_CEN; /* Disable associated timer */
+    dacp->state = DAC_STOP;
+
+    if (!(DAC1->CR & (STM32_DAC_CR_EN | STM32_DAC_CR_EN << 16))) {
+      /* DAC Clock disable only if all channels are off.*/
+      rccDisableDAC1(FALSE);
+    }
+  }
+}
+
+/**
+ * @brief   Sends data over the DAC bus.
+ * @details This asynchronous function starts a transmit operation.
+ * @post    At the end of the operation the configured callback is invoked.
+ *
+ * @param[in] dacp      pointer to the @p DACDriver object
+ * @param[in] n         number of words to send
+ * @param[in] txbuf     the pointer to the transmit buffer
+ *
+ * @notapi
+ */
+void dac_lld_start_conversion(DACDriver *dacp) {
+  osalDbgAssert(dacp->samples, 
+    "dacp->samples is NULL pointer");
   dmaStreamSetMemory0(dacp->dma, dacp->samples);
   dmaStreamSetTransactionSize(dacp->dma, dacp->depth);
-  dmaStreamSetMode(dacp->dma, dacp->dmamode | STM32_DMA_CR_EN);
-
-  /* Timer Start.*/
-  dacp->tim->CNT  = 0;
-  dacp->tim->CR1  = TIM_CR1_CEN;
-  
+  dmaStreamSetMode(dacp->dma, dacp->dmamode | STM32_DMA_CR_EN |
+  STM32_DMA_CR_CIRC);
 }
 
 void dac_lld_single_convert(DACDriver *dacp, dacsample_t value) {
@@ -412,17 +390,17 @@ void dac_lld_single_convert(DACDriver *dacp, dacsample_t value) {
   
 #if STM32_DAC_USE_CHN1
   if (&DACD1 == dacp) {
-    dacp->dac->SWTRIGR = STM32_DAC_SWTRIGR1;
+    dacp->dac->SWTRIGR = DAC_SWTRIGR_SWTRIG1;
   }
 #endif
 #if STM32_DAC_USE_CHN2
   if (&DACD2 == dacp) {
-    dacp->dac->SWTRIGR = STM32_DAC_SWTRIGR2;
+    dacp->dac->SWTRIGR = DAC_SWTRIGR_SWTRIG2;
   }
 #endif
 #if STM32_DAC_USE_CHN3
   if (&DACD3 == dacp) {
-    dacp->dac->SWTRIGR = STM32_DAC_SWTRIGR1;
+    dacp->dac->SWTRIGR = DAC_SWTRIGR_SWTRIG1;
   }
 #endif
 
@@ -455,6 +433,7 @@ void dac_lld_stop_conversion(DACDriver *dacp) {
   
   dacp->state = DAC_READY;
 }
-#endif /* HAL_USE_DAC */
+
+#endif /* DRIVER_USE_DAC */
 
 /** @} */

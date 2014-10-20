@@ -34,10 +34,10 @@
 #include "ch.h"
 #include "hal.h"
 
-#if HAL_USE_TIMCAP || defined(__DOXYGEN__)
+#if DRIVER_USE_TIMCAP || defined(__DOXYGEN__)
 
 #include "stm32_tim.h"
-#include "timcap.h"
+#include "timcap_driver.h"
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
@@ -520,10 +520,8 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD1 == timcapp) {
       rccEnableTIM1(FALSE);
       rccResetTIM1();
-      nvicEnableVector(STM32_TIM1_UP_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM1_IRQ_PRIORITY));
-      nvicEnableVector(STM32_TIM1_CC_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM1_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM1_UP_NUMBER, STM32_TIMCAP_TIM1_IRQ_PRIORITY);
+      nvicEnableVector(STM32_TIM1_CC_NUMBER, STM32_TIMCAP_TIM1_IRQ_PRIORITY);
 #if defined(STM32_TIM1CLK)
       timcapp->clock = STM32_TIM1CLK;
 #else
@@ -535,8 +533,7 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD2 == timcapp) {
       rccEnableTIM2(FALSE);
       rccResetTIM2();
-      nvicEnableVector(STM32_TIM2_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM2_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM2_NUMBER, STM32_TIMCAP_TIM2_IRQ_PRIORITY);
       timcapp->clock = STM32_TIMCLK1;
     }
 #endif
@@ -544,8 +541,7 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD3 == timcapp) {
       rccEnableTIM3(FALSE);
       rccResetTIM3();
-      nvicEnableVector(STM32_TIM3_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM3_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM3_NUMBER, STM32_TIMCAP_TIM3_IRQ_PRIORITY);
       timcapp->clock = STM32_TIMCLK1;
     }
 #endif
@@ -553,8 +549,7 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD4 == timcapp) {
       rccEnableTIM4(FALSE);
       rccResetTIM4();
-      nvicEnableVector(STM32_TIM4_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM4_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM4_NUMBER, STM32_TIMCAP_TIM4_IRQ_PRIORITY);
       timcapp->clock = STM32_TIMCLK1;
     }
 #endif
@@ -562,8 +557,7 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD5 == timcapp) {
       rccEnableTIM5(FALSE);
       rccResetTIM5();
-      nvicEnableVector(STM32_TIM5_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM5_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM5_NUMBER, STM32_TIMCAP_TIM5_IRQ_PRIORITY);
       timcapp->clock = STM32_TIMCLK1;
     }
 #endif
@@ -571,10 +565,8 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD8 == timcapp) {
       rccEnableTIM8(FALSE);
       rccResetTIM8();
-      nvicEnableVector(STM32_TIM8_UP_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM8_IRQ_PRIORITY));
-      nvicEnableVector(STM32_TIM8_CC_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM8_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM8_UP_NUMBER, STM32_TIMCAP_TIM8_IRQ_PRIORITY);
+      nvicEnableVector(STM32_TIM8_CC_NUMBER, STM32_TIMCAP_TIM8_IRQ_PRIORITY);
 #if defined(STM32_TIM8CLK)
       timcapp->clock = STM32_TIM8CLK;
 #else
@@ -586,8 +578,7 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
     if (&TIMCAPD9 == timcapp) {
       rccEnableTIM9(FALSE);
       rccResetTIM9();
-      nvicEnableVector(STM32_TIM9_NUMBER,
-                       CORTEX_PRIORITY_MASK(STM32_TIMCAP_TIM9_IRQ_PRIORITY));
+      nvicEnableVector(STM32_TIM9_NUMBER, STM32_TIMCAP_TIM9_IRQ_PRIORITY);
       timcapp->clock = STM32_TIMCLK1;
     }
 #endif
@@ -609,9 +600,9 @@ void timcap_lld_start(TIMCAPDriver *timcapp) {
 
   /* Timer configuration.*/
   psc = (timcapp->clock / timcapp->config->frequency) - 1;
-  chDbgAssert((psc <= 0xFFFF) &&
+  osalDbgAssert((psc <= 0xFFFF) &&
               ((psc + 1) * timcapp->config->frequency) == timcapp->clock,
-              "timcap_lld_start(), #1", "invalid frequency");
+              "invalid frequency");
   timcapp->tim->PSC  = (uint16_t)psc;
   timcapp->tim->ARR = timcap_get_max_arr(timcapp);
 
@@ -822,6 +813,6 @@ void timcap_lld_disable(TIMCAPDriver *timcapp) {
   timcapp->tim->DIER &= ~STM32_TIM_DIER_IRQ_MASK;
 }
 
-#endif /* HAL_USE_TIMCAP */
+#endif /* DRIVER_USE_TIMCAP */
 
 /** @} */

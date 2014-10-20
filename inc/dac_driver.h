@@ -1,10 +1,10 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006,2007,2008,2009,2010,
-                 2011,2012 Giovanni Di Sirio.
+    ChibiOS/HAL - Copyright (C) 2006,2007,2008,2009,2010,
+                  2011,2012,2013,2014 Giovanni Di Sirio.
 
-    This file is part of ChibiOS/RT.
+    This file is part of ChibiOS/HAL 
 
-    ChibiOS/RT is free software; you can redistribute it and/or modify
+    ChibiOS/HAL is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
@@ -26,12 +26,10 @@
  * @{
  */
 
-#include "hal.h"
+#ifndef _DAC_DRIVER_H_
+#define _DAC_DRIVER_H_
 
-#ifndef _DAC_H_
-#define _DAC_H_
-
-#if HAL_USE_DAC || defined(__DOXYGEN__)
+#if DRIVER_USE_DAC || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -66,10 +64,6 @@
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
 
-#if DAC_USE_MUTUAL_EXCLUSION && !CH_USE_MUTEXES && !CH_USE_SEMAPHORES
-#error "DAC_USE_MUTUAL_EXCLUSION requires CH_USE_MUTEXES and/or CH_USE_SEMAPHORES"
-#endif
-
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
@@ -86,7 +80,7 @@ typedef enum {
   DAC_ERROR = 5 			        /**< Error.                             */
 } dacstate_t;
 
-#include "dac_lld.h"
+#include "dac_driver_lld.h"
 
 /*===========================================================================*/
 /* Driver macros.                                                            */
@@ -109,27 +103,7 @@ typedef enum {
  *
  * @notapi
  */
-#define _dac_wait_s(dacp) {                                                 \
-  chDbgAssert((dacp)->thread == NULL,                                       \
-              "_dac_wait_s(), #1", "already waiting");                      \
-  (dacp)->thread = chThdSelf();                                             \
-  chSchGoSleepS(THD_STATE_SUSPENDED);                                       \
-}
-/**
- * @brief   Resumes a thread waiting for a conversion completion.
- *
- * @param[in] dacp      pointer to the @p DACDriver object
- *
- * @notapi
- */
-#define _dac_reset_i(dacp) {                                                \
-  if ((dacp)->thread != NULL) {                                             \
-    Thread *tp = (dacp)->thread;                                            \
-    (dacp)->thread = NULL;                                                  \
-    tp->p_u.rdymsg  = RDY_RESET;                                            \
-    chSchReadyI(tp);                                                        \
-  }                                                                         \
-}
+#define _dac_wait_s(dacp) osalThreadSuspendS(&(dacp)->thread)
 
 /**
  * @brief   Resumes a thread waiting for a conversion completion.
@@ -138,13 +112,16 @@ typedef enum {
  *
  * @notapi
  */
-#define _dac_reset_s(dacp) {                                                \
-  if ((dacp)->thread != NULL) {                                             \
-    Thread *tp = (dacp)->thread;                                            \
-    (dacp)->thread = NULL;                                                  \
-    chSchWakeupS(tp, RDY_RESET);                                            \
-  }                                                                         \
-}
+#define _dac_reset_i(dacp) osalThreadResumeI(&(dacp)->thread, MSG_RESET)
+
+/**
+ * @brief   Resumes a thread waiting for a conversion completion.
+ *
+ * @param[in] dacp      pointer to the @p DACDriver object
+ *
+ * @notapi
+ */
+#define _dac_reset_s(dacp) osalThreadResumeS(&(dacp)->thread, MSG_RESET)
 
 /**
  * @brief   Wakes up the waiting thread.
@@ -154,15 +131,9 @@ typedef enum {
  * @notapi
  */
 #define _dac_wakeup_isr(dacp) {                                             \
-  chSysLockFromIsr();                                                       \
-  if ((dacp)->thread != NULL) {                                             \
-    Thread *tp;                                                             \
-    tp = (dacp)->thread;                                                    \
-    (dacp)->thread = NULL;                                                  \
-    tp->p_u.rdymsg = RDY_OK;                                                \
-    chSchReadyI(tp);                                                        \
-  }                                                                         \
-  chSysUnlockFromIsr();                                                     \
+  osalSysLockFromISR();                                                     \
+  osalThreadResumeI(&(dacp)->thread, MSG_OK);                               \
+  osalSysUnlockFromISR();                                                   \
 }
 
 /**
@@ -173,15 +144,9 @@ typedef enum {
  * @notapi
  */
 #define _dac_timeout_isr(dacp) {                                            \
-  chSysLockFromIsr();                                                       \
-  if ((dacp)->thread != NULL) {                                             \
-    Thread *tp;                                                             \
-    tp = (dacp)->thread;                                                    \
-    (dacp)->thread = NULL;                                                  \
-    tp->p_u.rdymsg = RDY_TIMEOUT;                                           \
-    chSchReadyI(tp);                                                        \
-  }                                                                         \
-  chSysUnlockFromIsr();                                                     \
+  osalSysLockFromISR();                                                     \
+  osalThreadResumeI(&(dacp)->thread, MSG_TIMEOUT);                          \
+  osalSysUnlockFromISR();                                                   \
 }
 
 #else /* !DAC_USE_WAIT */
@@ -307,7 +272,7 @@ extern "C" {
   void dacObjectInit(DACDriver *dacp);
   void dacStart(DACDriver *dacp, const DACConfig *config);
   void dacStop(DACDriver *dacp);
-  void dacConvert(DACDriver *dacp, dacsample_t value);
+  void dacConvertOne(DACDriver *dacp, dacsample_t value);
   void dacStartConversion(DACDriver *dacp, const DACConversionGroup *grpp,
                           const dacsample_t *samples, size_t depth);
   void dacStartConversionI(DACDriver *dacp, const DACConversionGroup *grpp,
@@ -315,7 +280,7 @@ extern "C" {
   void dacStopConversion(DACDriver *dacp);
   void dacStopConversionI(DACDriver *dacp);
 #if DAC_USE_WAIT || defined(__DOXYGEN__)
-  msg_t dacWaitConversion(DACDriver *dacp, const DACConversionGroup *grpp,
+  msg_t dacConvert(DACDriver *dacp, const DACConversionGroup *grpp,
                    const dacsample_t *samples, size_t depth);
 #endif /* DAC_USE_WAIT */
 #if DAC_USE_MUTUAL_EXCLUSION
@@ -326,8 +291,8 @@ extern "C" {
 }
 #endif
 
-#endif /* HAL_USE_DAC */
+#endif /* DRIVER_USE_DAC */
 
-#endif /* _DAC_H_ */
+#endif /* _DAC_DRIVER_H_ */
 
 /** @} */
