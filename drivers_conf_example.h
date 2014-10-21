@@ -21,6 +21,11 @@
 #define DRIVER_USE_IUART                 TRUE
 #endif
 
+#if !defined(DRIVER_USE_EICU) || defined(__DOXYGEN__)
+#define DRIVER_USE_EICU                 TRUE
+#endif
+
+
 
 
 /*
@@ -55,6 +60,26 @@
 #define STM32_IUART_USE_USART2             FALSE
 #define STM32_IUART_USART1_IRQ_PRIORITY      3
 #define STM32_IUART_USART2_IRQ_PRIORITY      3
+
+/*
+ * Extended ICU driver system settings.
+ */
+#define STM32_EICU_USE_TIM1                 FALSE
+#define STM32_EICU_USE_TIM2                 FALSE
+#define STM32_EICU_USE_TIM3                 TRUE
+#define STM32_EICU_USE_TIM4                 FALSE
+#define STM32_EICU_USE_TIM5                 FALSE
+#define STM32_EICU_USE_TIM8                 FALSE
+#define STM32_EICU_USE_TIM9                 TRUE
+#define STM32_EICU_USE_TIM12                TRUE
+#define STM32_EICU_TIM1_IRQ_PRIORITY        7
+#define STM32_EICU_TIM2_IRQ_PRIORITY        7
+#define STM32_EICU_TIM3_IRQ_PRIORITY        7
+#define STM32_EICU_TIM4_IRQ_PRIORITY        7
+#define STM32_EICU_TIM5_IRQ_PRIORITY        7
+#define STM32_EICU_TIM8_IRQ_PRIORITY        7
+#define STM32_EICU_TIM9_IRQ_PRIORITY        7
+#define STM32_EICU_TIM12_IRQ_PRIORITY       7
 
 
 #endif /* _DRIVERS_CONF_H */

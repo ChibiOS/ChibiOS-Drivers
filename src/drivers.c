@@ -14,4 +14,7 @@ void driversInit(void)
 #if defined(DRIVER_USE_IUART) && DRIVER_USE_IUART
   iuartInit();
 #endif
+#if defined(DRIVER_USE_EICU) && DRIVER_USE_EICU
+  eicuInit();
+#endif
 }

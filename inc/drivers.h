@@ -6,6 +6,7 @@
 #include "iwdg_driver.h"
 #include "timcap_driver.h"
 #include "iuart_driver.h"
+#include "eicu_driver.h"
 
 void driversInit(void);
 
