@@ -19,4 +19,5 @@ So far only drivers for STM32.
 * Digital Analog Converter (dac), with optional DMA transfers
 * Timer input capture (timcap), works on all channels simultaneously
 * Independent watchdog timer (iwdg)
-* Interrupt based UART driver (iuart), in case you run out of DMA channels  
+* Interrupt based UART (iuart), in case you run out of DMA channels  
+* Enhanced input capture unit (eicu).
