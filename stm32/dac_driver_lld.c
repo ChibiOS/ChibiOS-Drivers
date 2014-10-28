@@ -34,6 +34,8 @@
 
 #if !defined(DAC1)
 #define DAC1 DAC
+#undef rccEnableDAC1
+#undef rccDisableDAC1
 #define rccEnableDAC1 rccEnableDAC
 #define rccDisableDAC1 rccDisableDAC
 #endif
