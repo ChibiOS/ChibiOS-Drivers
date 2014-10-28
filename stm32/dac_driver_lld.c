@@ -236,8 +236,8 @@ void dac_lld_start(DACDriver *dacp) {
     dacp->tim->CR1  = TIM_CR1_CEN;
 
     /* DAC configuration */
-    dacp->dac->CR |= ( (dacp->dac->CR & ~STM32_DAC_CR_MASK) | \
-      (STM32_DAC_CR_EN | STM32_DAC_CR_DMAEN | dacp->config->cr_flags) ) << regshift;
+    dacp->dac->CR &=  ~(STM32_DAC_CR_MASK << regshift);
+    dacp->dac->CR |= (STM32_DAC_CR_EN | STM32_DAC_CR_DMAEN | dacp->config->cr_flags) << regshift;
       
     /* DMA setup. */
     b = dmaStreamAllocate(dacp->dma,
@@ -298,7 +298,7 @@ void dac_lld_stop(DACDriver *dacp) {
   /* If in ready state then disables the DAC clock.*/
   if (dacp->state == DAC_READY) {
 
-    /* DMA disable.*/
+    /* DMA release.*/
     dmaStreamRelease(dacp->dma);
 
 #if STM32_DAC_USE_CHN1
@@ -415,7 +415,6 @@ void dac_lld_stop_conversion(DACDriver *dacp) {
 
   /* DMA disable and release. */
   dmaStreamDisable(dacp->dma);
-  dmaStreamRelease(dacp->dma);
   
 #if STM32_DAC_USE_CHN1
   if (&DACD1 == dacp) {
