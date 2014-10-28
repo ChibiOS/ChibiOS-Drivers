@@ -7,6 +7,9 @@ DRIVERSRC += $(DRIVERPATH)/src/dac_driver.c
 DRIVERSRC += $(DRIVERPATH)/src/iwdg_driver.c
 DRIVERSRC += $(DRIVERPATH)/src/iuart_driver.c
 DRIVERSRC += $(DRIVERPATH)/src/eicu_driver.c
+DRIVERSRC += $(DRIVERPATH)/src/eeprom_driver.c
+DRIVERSRC += $(DRIVERPATH)/src/24xx_driver.c
+DRIVERSRC += $(DRIVERPATH)/src/25xx_driver.c
 
 DRIVERINC += $(DRIVERPATH)/inc
 
