@@ -21,3 +21,4 @@ So far only drivers for STM32.
 * Independent watchdog timer (iwdg)
 * Interrupt based UART (iuart), in case you run out of DMA channels  
 * Enhanced input capture unit (eicu).
+* Eeprom via SPI and/or I2C.
