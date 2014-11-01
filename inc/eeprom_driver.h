@@ -29,8 +29,26 @@
 #ifndef __EEPROM_H__
 #define __EEPROM_H__
 
+#if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM
+
 #include "ch.h"
 #include "drivers.h"
+
+#ifndef EEPROM_DRV_USE_25XX
+#define EEPROM_DRV_USE_25XX FALSE
+#endif
+
+#ifndef EEPROM_DRV_USE_24XX
+#define EEPROM_DRV_USE_24XX FALSE
+#endif
+
+#if EEPROM_DRV_USE_25XX && EEPROM_DRV_USE_24XX
+#define EEPROM_DRV_TABLE_SIZE 2
+#elif EEPROM_DRV_USE_25XX || EEPROM_DRV_USE_24XX
+#define EEPROM_DRV_TABLE_SIZE 1
+#else
+#error "No EEPROM device selected!"
+#endif
 
 #define _eeprom_file_config_data                                            \
   /* Lower barrier of file in EEPROM memory array. */                       \
@@ -246,4 +264,5 @@ int eepfs_geterror(void *ip);
 msg_t eepfs_put(void *ip, uint8_t b);
 msg_t eepfs_get(void *ip);
 
+#endif /* #if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM */
 #endif /* __EEPROM_H__ */

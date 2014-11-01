@@ -26,6 +26,8 @@
   The work is provided "as is" without warranty of any kind, neither express nor implied.
 */
 
+#if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM
+
 #include "eeprom_driver.h"
 #include <string.h>
 
@@ -58,7 +60,6 @@ EepromDevice *__eeprom_drv_table[] = {
  */
 const EepromDevice *EepromFindDevice(const char *name) {
 
-  extern EepromDevice *__eeprom_drv_table[];
   int i;
   const EepromDevice *drv;
 
@@ -66,7 +67,7 @@ const EepromDevice *EepromFindDevice(const char *name) {
 
   for (i = 0; i < EEPROM_DRV_TABLE_SIZE; i++) {
     drv = __eeprom_drv_table[i];
-    if (drv->name != NULL && !strcmp(drv->name, name)) {
+    if (drv->name != NULL && strcmp(drv->name, name) == 0) {
       return drv;
     }
   }
@@ -194,3 +195,5 @@ msg_t eepfs_get(void *ip) {
   (void)ip;
   return 0;
 }
+
+#endif /* #if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM */

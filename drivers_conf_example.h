@@ -88,6 +88,5 @@
  */
 #define EEPROM_DRV_USE_25XX              TRUE
 #define EEPROM_DRV_USE_24XX              FALSE
-#define EEPROM_DRV_TABLE_SIZE           2
 
 #endif /* _DRIVERS_CONF_H */
