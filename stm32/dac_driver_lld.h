@@ -27,6 +27,7 @@
 
 #if DRIVER_USE_DAC || defined(__DOXYGEN__)
 
+#include "drivers_conf.h"
 #include "stm32_tim.h"
 #include "stm32_rcc.h"
 #include "extra_registry.h"
@@ -162,7 +163,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN1_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN1_DMA_STREAM           STM32_DMA_STREAM_ID(1, 3)
+#define STM32_DAC_CHN1_DMA_STREAM           STM32_DMA_STREAM_ID(2, 3)
 #endif
 
 /**
@@ -170,7 +171,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN2_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN2_DMA_STREAM           STM32_DMA_STREAM_ID(1, 4)
+#define STM32_DAC_CHN2_DMA_STREAM           STM32_DMA_STREAM_ID(2, 4)
 #endif
 
 /**
@@ -178,7 +179,7 @@
  * @note    This option is only available on platforms with enhanced DMA.
  */
 #if !defined(STM32_DAC_CHN3_DMA_STREAM) || defined(__DOXYGEN__)
-#define STM32_DAC_CHN3_DMA_STREAM           STM32_DMA_STREAM_ID(1, 5)
+#define STM32_DAC_CHN3_DMA_STREAM           STM32_DMA_STREAM_ID(2, 5)
 #endif
 
 /*===========================================================================*/
