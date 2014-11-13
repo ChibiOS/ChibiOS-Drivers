@@ -33,6 +33,24 @@
 #define rccResetTIM7() rccResetAPB1(RCC_APB1RSTR_TIM7RST)
 #endif
 
+#ifndef rccEnableTIM15
+#define rccEnableTIM15(lp) rccEnableAPB2(RCC_APB2ENR_TIM15EN, lp)
+#define rccDisableTIM15(lp) rccDisableAPB2(RCC_APB2ENR_TIM15EN, lp)
+#define rccResetTIM15() rccResetAPB2(RCC_APB2RSTR_TIM15RST)
+#endif
+
+#ifndef rccEnableTIM16
+#define rccEnableTIM16(lp) rccEnableAPB2(RCC_APB2ENR_TIM16EN, lp)
+#define rccDisableTIM16(lp) rccDisableAPB2(RCC_APB2ENR_TIM16EN, lp)
+#define rccResetTIM16() rccResetAPB2(RCC_APB2RSTR_TIM16RST)
+#endif
+
+#ifndef rccEnableTIM17
+#define rccEnableTIM17(lp) rccEnableAPB2(RCC_APB2ENR_TIM17EN, lp)
+#define rccDisableTIM17(lp) rccDisableAPB2(RCC_APB2ENR_TIM17EN, lp)
+#define rccResetTIM17() rccResetAPB2(RCC_APB2RSTR_TIM17RST)
+#endif
+
 #ifndef rccEnableTIM18
 #define rccEnableTIM18(lp) rccEnableAPB1(RCC_APB1ENR_TIM18EN, lp)
 #define rccDisableTIM18(lp) rccDisableAPB1(RCC_APB1ENR_TIM18EN, lp)

@@ -245,8 +245,7 @@ static void timcap_lld_serve_interrupt(TIMCAPDriver *timcapp) {
   if ((sr & STM32_TIM_SR_CC4IF) != 0 && timcapp->config->capture_cb_array[TIMCAP_CHANNEL_4] != NULL )
     _timcap_isr_invoke_channel4_cb(timcapp);
 
-
-  if ((sr & STM32_TIM_SR_UIF) != 0)
+  if ((sr & STM32_TIM_SR_UIF) != 0 && timcapp->config->overflow_cb != NULL)
     _timcap_isr_invoke_overflow_cb(timcapp);
 }
 
@@ -794,7 +793,8 @@ void timcap_lld_enable(TIMCAPDriver *timcapp) {
 
   if (timcapp->config->overflow_cb != NULL)
     timcapp->tim->DIER |= STM32_TIM_DIER_UIE;
-  timcapp->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN;
+  
+  timcapp->tim->CR1 = STM32_TIM_CR1_URS | STM32_TIM_CR1_CEN | timcapp->config->cr1;
 }
 
 /**
