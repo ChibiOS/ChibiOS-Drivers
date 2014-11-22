@@ -8,6 +8,12 @@
 #include "iuart_driver.h"
 #include "eicu_driver.h"
 
-void driversInit(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+  void driversInit(void);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
