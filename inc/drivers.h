@@ -4,6 +4,7 @@
 #include "hal.h"
 #include "drivers_conf.h"
 #include "dac_driver.h"
+#include "eeprom_driver.h"
 #include "iwdg_driver.h"
 #include "timcap_driver.h"
 #include "iuart_driver.h"
