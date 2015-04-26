@@ -359,7 +359,7 @@ void dac_lld_start_conversion(DACDriver *dacp) {
   /* DMA Setup */  
   dmaStreamSetMemory0(dacp->dma, dacp->samples);
   dmaStreamSetTransactionSize(dacp->dma, dacp->depth);
-  dmaStreamSetMode(dacp->dma, dacp->dmamode | STM32_DMA_CR_EN);
+  dmaStreamSetMode(dacp->dma, dacp->dmamode | STM32_DMA_CR_EN | STM32_DMA_CR_HTIE);
 
   /* Timer Start.*/
   dacp->tim->CNT  = 0;
@@ -435,7 +435,6 @@ void dac_lld_stop_conversion(DACDriver *dacp) {
 
   /* DMA disable and release. */
   dmaStreamDisable(dacp->dma);
-  dmaStreamRelease(dacp->dma);
   
 #if STM32_DAC_USE_CHN1
   if (&DACD1 == dacp) {
