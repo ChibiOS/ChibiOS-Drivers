@@ -3,6 +3,8 @@ ChibiOS-Drivers
 
 Collection of drivers for ChibiOS' HAL.
 
+**This repo is being deprecated. Please consider using ChibiOS-Contrib instead.**
+
 #### Using
 * Clone this repo in the same directory as ChibiOS-RT. (not inside)
 * Include the drivers.mk file into your project's Makefile ( include $(CHIBIOS)/../ChibiOS-Drivers/drivers.mk )
