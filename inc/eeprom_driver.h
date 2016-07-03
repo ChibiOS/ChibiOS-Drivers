@@ -29,10 +29,10 @@
 #ifndef __EEPROM_H__
 #define __EEPROM_H__
 
-#if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM
-
 #include "ch.h"
 #include "drivers.h"
+
+#if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM
 
 #ifndef EEPROM_DRV_USE_25XX
 #define EEPROM_DRV_USE_25XX FALSE
@@ -63,8 +63,13 @@
   systime_t       write_time;
   
 typedef uint32_t fileoffset_t;
+#ifndef FILE_OK
 #define FILE_OK   0
+#endif
+
+#ifndef FILE_ERROR
 #define FILE_ERROR   0xFFFFFFFFUL
+#endif
 
 typedef struct {
   _eeprom_file_config_data
@@ -243,6 +248,10 @@ EepromFileStream *SPIEepromFileOpen(SPIEepromFileStream *efs,
 #define chFileStreamWrite(ip, bp, n) (chSequentialStreamWrite(ip, bp, n))
 #endif
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 const EepromDevice *EepromFindDevice(const char *name);
 
 EepromFileStream *EepromFileOpen(EepromFileStream *efs,
@@ -263,6 +272,10 @@ uint32_t eepfs_close(void *ip);
 int eepfs_geterror(void *ip);
 msg_t eepfs_put(void *ip, uint8_t b);
 msg_t eepfs_get(void *ip);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM */
 #endif /* __EEPROM_H__ */

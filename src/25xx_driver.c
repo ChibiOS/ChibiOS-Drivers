@@ -42,6 +42,7 @@ Note:
   being written to the next page as might be expected.
 *********************************************************************/
 
+#include "drivers.h"
 #include "eeprom_driver.h"
 #include <string.h>
 
@@ -96,9 +97,9 @@ static void ll_25xx_transmit_receive(const SPIEepromFileConfig *eepcfg,
 
   spiStart(eepcfg->spip, eepcfg->spicfg);
   spiSelect(eepcfg->spip);
-  spiSend(eepcfg->spip, txlen, &txbuf);
+  spiSend(eepcfg->spip, txlen, txbuf);
   if (rxlen) /* Check if receive is needed. */
-    spiReceive(eepcfg->spip, rxlen, &rxbuf);
+    spiReceive(eepcfg->spip, rxlen, rxbuf);
   spiUnselect(eepcfg->spip);
 
 #if SPI_USE_MUTUAL_EXCLUSION

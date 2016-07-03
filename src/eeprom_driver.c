@@ -26,6 +26,8 @@
   The work is provided "as is" without warranty of any kind, neither express nor implied.
 */
 
+#include "drivers.h"
+
 #if defined(DRIVER_USE_EEPROM) && DRIVER_USE_EEPROM
 
 #include "eeprom_driver.h"
