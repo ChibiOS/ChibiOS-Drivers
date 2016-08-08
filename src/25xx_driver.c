@@ -101,7 +101,7 @@ static void ll_25xx_transmit_receive(const SPIEepromFileConfig *eepcfg,
   size_t count = 0;
   for( count = 0; count < txlen; ++count )
       spiPolledExchange( eepcfg->spip, txbuf[count] );
-  for( count = 0; count < txlen; ++count )
+  for( count = 0; count < rxlen; ++count )
       rxbuf[count] = spiPolledExchange( eepcfg->spip, 0 );
 #else
   spiSend(eepcfg->spip, txlen, txbuf);
