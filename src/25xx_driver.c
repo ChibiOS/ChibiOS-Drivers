@@ -42,6 +42,7 @@ Note:
   being written to the next page as might be expected.
 *********************************************************************/
 
+#include "drivers.h"
 #include "eeprom_driver.h"
 #include <string.h>
 
@@ -96,9 +97,17 @@ static void ll_25xx_transmit_receive(const SPIEepromFileConfig *eepcfg,
 
   spiStart(eepcfg->spip, eepcfg->spicfg);
   spiSelect(eepcfg->spip);
-  spiSend(eepcfg->spip, txlen, &txbuf);
+#ifdef POLLED_SPI
+  size_t count = 0;
+  for( count = 0; count < txlen; ++count )
+      spiPolledExchange( eepcfg->spip, txbuf[count] );
+  for( count = 0; count < rxlen; ++count )
+      rxbuf[count] = spiPolledExchange( eepcfg->spip, 0 );
+#else
+  spiSend(eepcfg->spip, txlen, txbuf);
   if (rxlen) /* Check if receive is needed. */
-    spiReceive(eepcfg->spip, rxlen, &rxbuf);
+    spiReceive(eepcfg->spip, rxlen, rxbuf);
+#endif
   spiUnselect(eepcfg->spip);
 
 #if SPI_USE_MUTUAL_EXCLUSION
@@ -235,8 +244,16 @@ static msg_t ll_eeprom_write(const SPIEepromFileConfig *eepcfg, uint32_t offset,
   spiSelect(eepcfg->spip);
   txlen = ll_eeprom_prepare_seq(txbuff, eepcfg->size, CMD_WRITE,
                                 (offset + eepcfg->barrier_low));
+#ifdef POLLED_SPI
+  size_t count = 0;
+  for( count = 0; count < txlen; ++count )
+      spiPolledExchange( eepcfg->spip, txbuff[count] );
+  for( count = 0; count < len; ++count )
+      spiPolledExchange( eepcfg->spip, data[count] );
+#else
   spiSend(eepcfg->spip, txlen, txbuff);
   spiSend(eepcfg->spip, len, data);
+#endif
   spiUnselect(eepcfg->spip);
 
 #if SPI_USE_MUTUAL_EXCLUSION
